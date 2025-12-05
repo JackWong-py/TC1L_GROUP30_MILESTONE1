@@ -22,8 +22,12 @@ Member_4:
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 using namespace std;
+
+// Global variable to store the attendance sheet filename
+string file;
 
 enum CHOICE
 {
@@ -43,7 +47,6 @@ int main()
     cout << "========================================" << endl;
 
     //Enter attendance sheet name
-    string file;
     cout << "Enter attendance sheet name: " << endl;
     cin >> file;
 
@@ -95,4 +98,50 @@ int main()
     }
 
     return 0;
+}
+
+// Function to view the attendance sheet in CSV format
+void view_attendance_sheet()
+{
+    // Open the attendance file for reading
+    ifstream inFile(file);
+
+    // Display the header
+    cout << "------------------------------------------" << endl;
+    cout << "    View Attendance Sheet (CSV Mode)" << endl;
+    cout << "------------------------------------------" << endl;
+
+    // Check if file opened successfully
+    if (!inFile.is_open())
+    {
+        cout << "Error: Could not open file '" << file << "'" << endl;
+        return;
+    }
+
+    // Display column headers
+    cout << "StudentID, Name, Status" << endl;
+
+    // Read and display each line from the file
+    string line;
+    bool hasData = false;
+
+    while (getline(inFile, line))
+    {
+        // Skip empty lines
+        if (line.empty())
+        {
+            continue;
+        }
+        cout << line << endl;
+        hasData = true;
+    }
+
+    // If no data was found, display a message
+    if (!hasData)
+    {
+        cout << "(No records found)" << endl;
+    }
+
+    // Close the file
+    inFile.close();
 }
