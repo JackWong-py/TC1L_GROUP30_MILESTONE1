@@ -22,8 +22,12 @@ Member_4:
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 using namespace std;
+
+// Global variable to store the attendance sheet filename
+string attendanceFile;
 
 enum CHOICE
 {
@@ -43,9 +47,8 @@ int main()
     cout << "========================================" << endl;
 
     //Enter attendance sheet name
-    string file;
     cout << "Enter attendance sheet name: " << endl;
-    cin >> file;
+    cin >> attendanceFile;
 
     //If attendance sheet name not exist, create a new file.
     //Else, create a new file.
@@ -71,7 +74,7 @@ int main()
     //3) Exit
     //  > Close file
 
-    CHOICE user_choice;
+    CHOICE user_choice = INSERT_ROW;
 
     while(user_choice != EXIT)
     {
@@ -95,4 +98,85 @@ int main()
     }
 
     return 0;
+}
+
+// Function to display the menu and get user choice
+CHOICE show_menu()
+{
+    int choice;
+    cout << "\n========================================" << endl;
+    cout << "              MENU" << endl;
+    cout << "========================================" << endl;
+    cout << "1. Insert New Row" << endl;
+    cout << "2. View Attendance Sheet (CSV Mode)" << endl;
+    cout << "3. Exit" << endl;
+    cout << "Enter your choice: ";
+    cin >> choice;
+
+    // Convert user input to CHOICE enum
+    switch(choice)
+    {
+        case 1:
+            return INSERT_ROW;
+        case 2:
+            return VIEW_SHEET;
+        case 3:
+            return EXIT;
+        default:
+            cout << "Invalid choice. Please try again." << endl;
+            return INSERT_ROW; // Return to menu loop
+    }
+}
+
+// Function to insert a new row into the attendance sheet
+void insert_new_row()
+{
+    // TODO: Implement insert new row functionality
+    cout << "Insert new row - Not implemented yet." << endl;
+}
+
+// Function to view the attendance sheet in CSV format
+void view_attendance_sheet()
+{
+    // Open the attendance file for reading
+    ifstream inFile(attendanceFile);
+
+    // Display the header
+    cout << "------------------------------------------" << endl;
+    cout << "    View Attendance Sheet (CSV Mode)" << endl;
+    cout << "------------------------------------------" << endl;
+
+    // Check if file opened successfully
+    if (!inFile.is_open())
+    {
+        cout << "Error: Could not open file '" << attendanceFile << "'" << endl;
+        return;
+    }
+
+    // Display column headers
+    cout << "StudentID, Name, Status" << endl;
+
+    // Read and display each line from the file
+    string line;
+    bool hasData = false;
+
+    while (getline(inFile, line))
+    {
+        // Skip empty lines
+        if (line.empty())
+        {
+            continue;
+        }
+        cout << line << endl;
+        hasData = true;
+    }
+
+    // If no data was found, display a message
+    if (!hasData)
+    {
+        cout << "(No records found)" << endl;
+    }
+
+    // Close the file
+    inFile.close();
 }
