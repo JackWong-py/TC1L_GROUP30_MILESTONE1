@@ -27,7 +27,7 @@ Member_4:
 using namespace std;
 
 // Global variable to store the attendance sheet filename
-string attendanceFile;
+string file;
 
 enum CHOICE
 {
@@ -48,7 +48,7 @@ int main()
 
     //Enter attendance sheet name
     cout << "Enter attendance sheet name: " << endl;
-    cin >> attendanceFile;
+    cin >> file;
 
     //If attendance sheet name not exist, create a new file.
     //Else, create a new file.
@@ -74,7 +74,7 @@ int main()
     //3) Exit
     //  > Close file
 
-    CHOICE user_choice = INSERT_ROW;
+    CHOICE user_choice;
 
     while(user_choice != EXIT)
     {
@@ -100,46 +100,11 @@ int main()
     return 0;
 }
 
-// Function to display the menu and get user choice
-CHOICE show_menu()
-{
-    int choice;
-    cout << "\n========================================" << endl;
-    cout << "              MENU" << endl;
-    cout << "========================================" << endl;
-    cout << "1. Insert New Row" << endl;
-    cout << "2. View Attendance Sheet (CSV Mode)" << endl;
-    cout << "3. Exit" << endl;
-    cout << "Enter your choice: ";
-    cin >> choice;
-
-    // Convert user input to CHOICE enum
-    switch(choice)
-    {
-        case 1:
-            return INSERT_ROW;
-        case 2:
-            return VIEW_SHEET;
-        case 3:
-            return EXIT;
-        default:
-            cout << "Invalid choice. Please try again." << endl;
-            return INSERT_ROW; // Return to menu loop
-    }
-}
-
-// Function to insert a new row into the attendance sheet
-void insert_new_row()
-{
-    // TODO: Implement insert new row functionality
-    cout << "Insert new row - Not implemented yet." << endl;
-}
-
 // Function to view the attendance sheet in CSV format
 void view_attendance_sheet()
 {
     // Open the attendance file for reading
-    ifstream inFile(attendanceFile);
+    ifstream inFile(file);
 
     // Display the header
     cout << "------------------------------------------" << endl;
@@ -149,7 +114,7 @@ void view_attendance_sheet()
     // Check if file opened successfully
     if (!inFile.is_open())
     {
-        cout << "Error: Could not open file '" << attendanceFile << "'" << endl;
+        cout << "Error: Could not open file '" << file << "'" << endl;
         return;
     }
 
