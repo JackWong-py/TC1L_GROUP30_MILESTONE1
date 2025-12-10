@@ -96,12 +96,3 @@ int main()
 
     return 0;
 }
-
-CHOICE show_menu()
-{
-    //Firstly, i need to cout the choice for user to choose
-    cout << //
-    //then get the choice fromsdukj abd
-
-
-}
