@@ -5,3 +5,5 @@
 *.cbp
 *.layout
 *.txt
+main
+_codeql_detected_source_root
