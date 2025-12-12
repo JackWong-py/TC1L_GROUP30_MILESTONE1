@@ -23,6 +23,8 @@ Member_4:
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <limits>
+#include <vector>
 
 using namespace std;
 
@@ -39,6 +41,12 @@ enum CHOICE
 CHOICE show_menu();
 void insert_new_row();
 void view_attendance_sheet();
+int FileCol;
+void NewFile();
+string colName[10];//I can't put more than 1 cin inside this string so I changed it to colName[10]
+string colType[10];
+vector <string> stringData[10];
+vector <int> intData[10];
 
 int main()
 {
@@ -49,13 +57,60 @@ int main()
     //Enter attendance sheet name
     cout << "Enter attendance sheet name: " << endl;
     cin >> file;
+    file=file+".txt";
+	ifstream CheckFile(file);
+	ofstream inFile; //To open attendance sheet file but if its opened and the system will not open again
+    if (CheckFile)
+	{
+        cout<<"I've opened your "<<file<<" attendance sheet."<<endl;
+	}//If attendance sheet name not exist, create a new file.
+    else
+    {
+        inFile.open(file);
+        if (!inFile)
+            cout<<"Failed to create your file"<<endl;
+        else
+        {
+            cout<<"Attendance sheet \""<<file<<"\"created sucessfully."<<endl; //Else, create a new file.
+            cout<<"Define number of columns (max 10): ";//If the file is new, define number of column of the CSV file (max 10)
+            cin>>FileCol;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            //While I asking for the column I faced the problem which it will cout ask user to 2 columns in a row which miss up the first column question so I used this line to solve this problem
+            for (int x=0;x<FileCol;x++) // After the file is successfully open/created, ask user column's name one column by one column
+            {
+                cout<<"Enter column "<<x+1<<" name (Name (TEXT/INT)): "<<endl;
+                getline(cin,colName[x]);
+            }
+            for (int x=0;x<FileCol;x++)
+            {
+                if (colName[x].find("TEXT") != string::npos)
+                    colType[x]="string";
+                else
+                    colType[x]="int";
+            }
+            for (int x=0;x<FileCol;x++)
+            {
+                if (colType[x]=="string")
+                {
+                    string value;
+                    cout<<"Enter "<<colName[x]<<":"<<endl;
+                    cin>>value;
+                    stringData[x].push_back(value);
+                }
+                else
+                {
+                    int value;
+                    cout<<"Enter "<<colName[x]<<":"<<endl;
+                    cin>>value;
+                    intData[x].push_back(value);
+                }
+            }
+        }
 
-    //If attendance sheet name not exist, create a new file.
-    //Else, create a new file.
 
-    //If the file is new, define number of column of the CSV file (max 10)
+    }
 
-    //After the file is successfully open/created,
+
     //Menu is prompted as below:
     //
     //1) Insert New Row
@@ -76,7 +131,7 @@ int main()
 
     CHOICE user_choice;
 
-    while(user_choice != EXIT)
+/*    while(user_choice != EXIT)
     {
         user_choice = show_menu(); //We get the user choice by showing the menu.
 
@@ -142,6 +197,6 @@ void view_attendance_sheet()
         cout << "(No records found)" << endl;
     }
 
-    // Close the file
+    // Close the file*/
     inFile.close();
 }

@@ -4,5 +4,7 @@
 *.docx
 *.cbp
 *.layout
+*.exe
+*.o
 main
 _codeql_detected_source_root
