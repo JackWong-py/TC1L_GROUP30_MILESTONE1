@@ -145,3 +145,39 @@ void view_attendance_sheet()
     // Close the file
     inFile.close();
 }
+
+CHOICE show_menu(){
+    int input = 0;
+    CHOICE choice;
+    do {
+
+        cout << "\n=====MENU=====\n";
+        cout << "1) Insert New Row\n";
+        cout << "2) View Sheet (CSV Mode)\n";
+        cout << "3) Exit\n";
+        cout << "Enter your choice[IN NUMEBR(1/2/3)]: ";
+        cin >> input;
+        switch(input){
+            case 1:{
+                choice = INSERT_ROW;
+                break;
+            }
+            case 2: {
+                choice = VIEW_SHEET;
+                break;
+            }
+            case 3: {
+                choice = EXIT;
+                break;
+            }
+            default: "Invalid! Enter 1/2/3 only. ";
+        }
+
+    } while (input <1 || input > 3);
+
+    return choice;
+}
+
+void insert_new_row();
+void view_attendance_sheet();
+
