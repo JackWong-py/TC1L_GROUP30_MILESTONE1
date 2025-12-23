@@ -9,4 +9,5 @@
 *.o
 main
 *.o
+*.depend
 _codeql_detected_source_root
