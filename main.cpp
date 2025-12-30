@@ -127,6 +127,16 @@ int main()
                    }
                }
             }
+            for (int x = 0; x < FileCol; x++)
+            {
+            if (x == FileCol - 1)
+                {inFile << colName[x] << '\n';}
+            else
+                {inFile << colName[x] << ',';
+            }
+            }
+
+            inFile.close();
 
         }
     }
