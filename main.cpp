@@ -49,6 +49,16 @@ void insert_new_row(string file_name);
 void view_attendance_sheet();
 void NewFile();
 void initialize_metadata(string file);
+bool validate_column_format(const string& col);
+
+// Function to validate column format - must end with (TEXT) or (INT)
+bool validate_column_format(const string& col)
+{
+    // Check if column ends with (TEXT) or (INT)
+    size_t len = col.length();
+    return (len >= 6 && col.substr(len - 6) == "(TEXT)") || 
+           (len >= 5 && col.substr(len - 5) == "(INT)");
+}
 
 int main()
 {
@@ -98,9 +108,24 @@ int main()
             for (int x=0;x<FileCol;x++) // After the file is successfully open/created, ask user column's name one column by one column
             {
                string col;
-                cout<<"Enter column "<<x+1<<" name (Name (TEXT/INT)): "<<endl;
-               getline(cin,col);
-               colName.push_back(col);
+               bool valid = false;
+               while (!valid)
+               {
+                   cout<<"Enter column "<<x+1<<" name (Name (TEXT/INT)): "<<endl;
+                   getline(cin,col);
+                   
+                   // Validate column format
+                   if (validate_column_format(col))
+                   {
+                       valid = true;
+                       colName.push_back(col);
+                   }
+                   else
+                   {
+                       cout << "Error: Column must end with type specification (TEXT) or (INT)." << endl;
+                       cout << "Example: Name (TEXT) or Age (INT)" << endl;
+                   }
+               }
             }
 
         }
@@ -165,7 +190,8 @@ void initialize_metadata(string file)
       }
       for (int x=0;x<FileCol;x++)
       {
-         if (colName[x].find("TEXT") != string::npos)
+         size_t len = colName[x].length();
+         if (len >= 6 && colName[x].substr(len - 6) == "(TEXT)")
             colType[x]="string";
          else
             colType[x]="int";
