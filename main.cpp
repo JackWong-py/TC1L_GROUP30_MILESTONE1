@@ -26,6 +26,7 @@ Member_4: View Sheet
 #include <sstream>
 #include <limits>
 #include <vector>
+#include <cctype>
 
 using namespace std;
 
@@ -260,6 +261,35 @@ void view_attendance_sheet()
     inFile.close();
 }
 //Jack's Part
+string get_text()
+      {
+          string input;
+
+          while(true)
+          {
+              bool valid = true;
+              getline(cin >> ws, input);
+
+              for (char c : input)
+              {
+                if (!isalpha(c) && !isspace(c))
+                {
+                    valid = false;
+                    break;
+                }
+              }
+
+              if (valid && !input.empty())
+              {
+                  return input; //only alphbet + space
+              }
+              else
+              {
+                  cout << "Invalid input! Only alphabets and space allowed. Try again.\n";
+              }
+          }
+      }
+
 void insert_new_row(string file_name)
 {
    ofstream file(file_name, ios::app); // Open file in append mode
@@ -273,12 +303,12 @@ void insert_new_row(string file_name)
    for (int x=0; x<FileCol; x++) //Loop through
    {
       //We check through the column type, if it is string type, the type of data write into file will be string type
-      if (colType[x]== "string")
+      if(colType[x] == "string")
       {
-         string value;
-         cout << "Enter " << colName[x] << " : ";
-         getline(cin >> ws, value);
-         file << value;
+          string value;
+          cout << "Enter " << colName[x] << " : ";
+          value = get_text();
+          file << value;
       }
       else
       {
@@ -340,7 +370,18 @@ CHOICE show_menu()
         cout << "2) View Sheet (CSV Mode)\n";
         cout << "3) Exit\n";
         cout << "Enter your choice[IN NUMEBR(1/2/3)]: ";
+
         cin >> input;
+
+        //Handling non-numeric inputs
+        if (!cin)  //Detect invalid input
+        {
+            cout << "Invalid input! Please enter a number(1/2/3) only.\n";
+            cin.clear();  //Reset input stream
+            cin.ignore(numeric_limits<streamsize>::max(),'\n');  //Remove garbage input
+            continue;  //Retry the menu
+        }
+
         switch(input)
         {
             case 1:
@@ -352,7 +393,8 @@ CHOICE show_menu()
             case 3:
                 choice = EXIT;
                 break;
-            default: "Invalid! Enter 1/2/3 only. ";
+            default:
+                cout << "\nInvalid! Enter 1/2/3 only.";
         }
 
     } while (input <1 || input > 3);
