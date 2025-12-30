@@ -49,6 +49,18 @@ void insert_new_row(string file_name);
 void view_attendance_sheet();
 void NewFile();
 void initialize_metadata(string file);
+bool validate_column_format(const string& col);
+
+// Function to validate column format - must contain (TEXT) or (INT)
+bool validate_column_format(const string& col)
+{
+    // Check if column contains (TEXT) or (INT)
+    if (col.find("(TEXT)") != string::npos || col.find("(INT)") != string::npos)
+    {
+        return true;
+    }
+    return false;
+}
 
 int main()
 {
@@ -98,9 +110,24 @@ int main()
             for (int x=0;x<FileCol;x++) // After the file is successfully open/created, ask user column's name one column by one column
             {
                string col;
-                cout<<"Enter column "<<x+1<<" name (Name (TEXT/INT)): "<<endl;
-               getline(cin,col);
-               colName.push_back(col);
+               bool valid = false;
+               while (!valid)
+               {
+                   cout<<"Enter column "<<x+1<<" name (Name (TEXT/INT)): "<<endl;
+                   getline(cin,col);
+                   
+                   // Validate column format
+                   if (validate_column_format(col))
+                   {
+                       valid = true;
+                       colName.push_back(col);
+                   }
+                   else
+                   {
+                       cout << "Error: Column must include type specification (TEXT) or (INT)." << endl;
+                       cout << "Example: Name (TEXT) or Age (INT)" << endl;
+                   }
+               }
             }
 
         }
