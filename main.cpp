@@ -54,12 +54,10 @@ bool validate_column_format(const string& col);
 // Function to validate column format - must contain (TEXT) or (INT)
 bool validate_column_format(const string& col)
 {
-    // Check if column contains (TEXT) or (INT)
-    if (col.find("(TEXT)") != string::npos || col.find("(INT)") != string::npos)
-    {
-        return true;
-    }
-    return false;
+    // Check if column ends with (TEXT) or (INT)
+    size_t len = col.length();
+    return (len >= 6 && col.substr(len - 6) == "(TEXT)") || 
+           (len >= 5 && col.substr(len - 5) == "(INT)");
 }
 
 int main()
