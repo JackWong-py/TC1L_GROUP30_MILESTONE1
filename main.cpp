@@ -42,7 +42,6 @@ enum CHOICE
 {
     INSERT_ROW,
     VIEW_SHEET,
-    COUNT_ROW,
     EXIT
 };
 
@@ -58,12 +57,14 @@ bool validate_column_format(const string& col)
 {
     // Check if column ends with (TEXT) or (INT)
     size_t len = col.length();
-    return (len >= 6 && col.substr(len - 6) == "(TEXT)") ||
+    return (len >= 6 && col.substr(len - 6) == "(TEXT)") || 
            (len >= 5 && col.substr(len - 5) == "(INT)");
 }
 
 int main()
 {
+
+
     cout << "========================================" << endl;
     cout << "STUDENT ATTENDANCE TRACKER - MILESTONE 1" << endl;
     cout << "========================================" << endl;
@@ -113,7 +114,7 @@ int main()
                {
                    cout<<"Enter column "<<x+1<<" name (Name (TEXT/INT)): "<<endl;
                    getline(cin,col);
-
+                   
                    // Validate column format
                    if (validate_column_format(col))
                    {
@@ -336,36 +337,6 @@ void insert_new_row(string file_name)
    file.close();
 }
 
-//count row
-int count_rows_except_header(const string& filename)
-{
-    // Make sure the file exists and is in the correct folder. Otherwise, the function will return 0.
-    ifstream inFile(filename);
-    if (!inFile.is_open())
-        return 0;
-
-    string line;
-    int count = 0;
-    bool isFirstLine = true; //skip the header row
-
-    while (getline(inFile, line))
-    {
-        if (line.empty()) continue;
-
-        if (isFirstLine)
-        {
-            isFirstLine = false; //skip header
-            continue;
-        }
-
-        count++;
-    }
-
-    inFile.close();
-    return count;
-}
-
-
 //Ian's part
 //Everything ok, need prompted more friendly if user input less than 1 and more than 3.
 CHOICE show_menu()
@@ -393,19 +364,19 @@ CHOICE show_menu()
     int input = 0;
     CHOICE choice;
     do {
+
         cout << "\n=====MENU=====\n";
         cout << "1) Insert New Row\n";
         cout << "2) View Sheet (CSV Mode)\n";
-        cout << "3) Count Records\n";  //(Exclude Header)
-        cout << "4) Exit\n";
-        cout << "Enter your choice[IN NUMBER(1/2/3/4)]: ";
+        cout << "3) Exit\n";
+        cout << "Enter your choice[IN NUMEBR(1/2/3)]: ";
 
         cin >> input;
 
         //Handling non-numeric inputs
         if (!cin)  //Detect invalid input
         {
-            cout << "Invalid input! Please enter a number(1/2/3/4) only.\n";
+            cout << "Invalid input! Please enter a number(1/2/3) only.\n";
             cin.clear();  //Reset input stream
             cin.ignore(numeric_limits<streamsize>::max(),'\n');  //Remove garbage input
             continue;  //Retry the menu
@@ -420,20 +391,13 @@ CHOICE show_menu()
                 choice = VIEW_SHEET;
                 break;
             case 3:
-            {
-                choice = COUNT_ROW;
-                int total = count_rows_except_header(file);
-                cout << "\nTotal Records: " << total << endl;
-                break;
-            }
-            case 4:
                 choice = EXIT;
                 break;
             default:
-                cout << "\nInvalid! Enter 1/2/3/4 only.";
+                cout << "\nInvalid! Enter 1/2/3 only.";
         }
 
-    } while (input <1 || input > 4);
+    } while (input <1 || input > 3);
 
     return choice;
 }
