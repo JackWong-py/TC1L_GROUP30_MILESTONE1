@@ -1,4 +1,4 @@
-# Student Attendance Tracker - Milestone 1
+# Student Attendance Tracker - Milestone 1 & 2
 
 ## Overview
 This is a C++ based **Student Attendance Tracker** designed for academic record management. The software allows users to organize attendance data by academic terms and weeks, providing a structured way to insert, view, update, and delete student records using a file-based storage system.
