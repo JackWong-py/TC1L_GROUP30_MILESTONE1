@@ -27,6 +27,9 @@ Member_4: View Sheet
 #include <limits>
 #include <vector>
 #include <cctype>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
 using namespace std;
 
@@ -52,6 +55,9 @@ void view_attendance_sheet();
 void NewFile();
 void initialize_metadata(string file);
 bool validate_column_format(const string& col);
+// New helper functions for term and file handling
+void create_term(const string& term_name);
+bool open_file_in_term(const string& term_name, const string& csv_name);
 
 // Function to validate column format - must end with (TEXT) or (INT)
 bool validate_column_format(const string& col)
@@ -80,10 +86,15 @@ int main()
     // > directly write to the first row of the file: Name(TEXT),StudentID(INT),Status(INT)
     // > Column with Name(TEXT),StudentID(INT),Status(INT) created successfully.
 
-    //Enter attendance sheet name
-    cout << "Enter attendance sheet name: " << endl;
-    cin >> file;
-    file=file+".txt";
+    // Auto-create requested term and open requested file (fallback to prompt if missing)
+    create_term("Trimester2530");
+    if (!open_file_in_term("Trimester2530", "week1_attendance"))
+    {
+        // If the file wasn't found in the term folder, fall back to original prompt
+        cout << "Enter attendance sheet name: " << endl;
+        cin >> file;
+        file = file + ".txt";
+    }
 
     ifstream CheckFile(file);
     ofstream inFile; //To open attendance sheet file but if its opened and the system will not open again
@@ -114,7 +125,15 @@ int main()
                    cout<<"Enter column "<<x+1<<" name (Name (TEXT/INT)): "<<endl;
                    getline(cin,col);
 
-                   // Validate column format
+                   // Trim trailing/leading spaces
+                   size_t start = col.find_first_not_of(" \t\r\n");
+                   size_t end = col.find_last_not_of(" \t\r\n");
+                   if (start == string::npos)
+                       col = "";
+                   else
+                       col = col.substr(start, end - start + 1);
+
+                   // Validate column format (strict)
                    if (validate_column_format(col))
                    {
                        valid = true;
@@ -122,8 +141,34 @@ int main()
                    }
                    else
                    {
-                       cout << "Error: Column must end with type specification (TEXT) or (INT)." << endl;
-                       cout << "Example: Name (TEXT) or Age (INT)" << endl;
+                       // If user entered a plain name (letters/spaces), assume TEXT
+                       bool letters_only = true;
+                       bool digits_only = true;
+                       for (char c : col)
+                       {
+                           if (!isalpha(c) && !isspace(c)) letters_only = false;
+                           if (!isdigit(c)) digits_only = false;
+                       }
+
+                       if (!col.empty() && letters_only)
+                       {
+                           string assumed = col + " (TEXT)";
+                           cout << "Assuming TEXT type, using: " << assumed << endl;
+                           valid = true;
+                           colName.push_back(assumed);
+                       }
+                       else if (!col.empty() && digits_only)
+                       {
+                           string assumed = col + " (INT)";
+                           cout << "Assuming INT type, using: " << assumed << endl;
+                           valid = true;
+                           colName.push_back(assumed);
+                       }
+                       else
+                       {
+                           cout << "Error: Column must end with type specification (TEXT) or (INT)." << endl;
+                           cout << "Example: Name (TEXT) or Age (INT)" << endl;
+                       }
                    }
                }
             }
@@ -137,6 +182,23 @@ int main()
             }
 
             inFile.close();
+
+            // Also create a .csv version with same header
+            string csvFile = file;
+            if (csvFile.size() > 4 && csvFile.substr(csvFile.size()-4) == ".txt")
+                csvFile = csvFile.substr(0, csvFile.size()-4) + ".csv";
+            ofstream outCsv(csvFile);
+            if (outCsv)
+            {
+                for (int x = 0; x < FileCol; x++)
+                {
+                    if (x == FileCol - 1)
+                        outCsv << colName[x] << '\n';
+                    else
+                        outCsv << colName[x] << ',';
+                }
+                outCsv.close();
+            }
 
         }
     }
@@ -215,6 +277,46 @@ void initialize_metadata(string file)
 //1) Program display headers multiple times,
 // > "StudentID, Name, Status" no need to be display.
 
+// Create a term folder under data/TERM_NAME (e.g. data/Trimester2530)
+void create_term(const string& term_name)
+{
+    string base = "data";
+    struct stat st = {0};
+    if (stat(base.c_str(), &st) == -1)
+    {
+        mkdir(base.c_str(), 0755);
+    }
+    string path = base + "/" + term_name;
+    if (stat(path.c_str(), &st) == -1)
+    {
+        if (mkdir(path.c_str(), 0755) == 0)
+            cout << "Create term -> " << term_name << " created" << endl;
+        else
+            cerr << "Failed to create term folder: " << path << endl;
+    }
+    else
+    {
+        cout << "Term already exists: " << term_name << endl;
+    }
+}
+
+// Open a CSV (txt) file located under data/TERM_NAME/CSV_NAME.txt
+// Sets the global `file` variable to the found path on success.
+bool open_file_in_term(const string& term_name, const string& csv_name)
+{
+    string path = "data/" + term_name + "/" + csv_name + ".txt";
+    ifstream f(path);
+    if (!f.is_open())
+    {
+        cerr << "Error: file not found: " << path << endl;
+        return false;
+    }
+    f.close();
+    file = path;
+    cout << "Open file -> " << csv_name << "" << endl;
+    return true;
+}
+
 void view_attendance_sheet()
 {
     // Open the attendance file for reading
@@ -291,49 +393,63 @@ string get_text()
 
 void insert_new_row(string file_name)
 {
-   ofstream file(file_name, ios::app); // Open file in append mode
+    // Build the row string first, then append to both .txt and .csv
+    string row;
+    for (int x = 0; x < FileCol; x++)
+    {
+        if (colType[x] == "string")
+        {
+             string value;
+             cout << "Enter " << colName[x] << " : ";
+             value = get_text();
+             row += value;
+        }
+        else
+        {
+            int value;
+            cout << "Enter " << colName[x] << " : ";
+            if (!(cin >> value))
+            {
+                cout << "Invalid input for (INT). Please enter number only." << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                x--; // repeat this column
+                continue;
+            }
+            row += to_string(value);
+        }
 
-   if (!file.is_open()) //If open file fail it will directly return.
-   {
-      std::cerr << "Error opening file!" << std::endl;
-      return;
-   }
+        if (x < FileCol - 1)
+            row += ',';
+    }
 
-   for (int x=0; x<FileCol; x++) //Loop through
-   {
-      //We check through the column type, if it is string type, the type of data write into file will be string type
-      if(colType[x] == "string")
-      {
-          string value;
-          cout << "Enter " << colName[x] << " : ";
-          value = get_text();
-          file << value;
-      }
-      else
-      {
-         int value;
-         cout << "Enter " << colName[x] << " : ";
-         if(!(cin >> value))
-         {
-            cout << "Invalid input for (INT). Please enter number only." << endl;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            x--; //I reduce the column loop by 1 to repeat current loop.
-            continue; //Ignore the below code, rerun the loops again.
-         }
-         file << value;
-      }
-      if (x < FileCol - 1)
-      {
-         file << ','; //Add a ',' if not the end of column
-      }
-      else
-      {
-         file << '\n'; //If it is a last column, end a new line
-      }
-   }
-   cout << "New row added successfully. " << endl;
-   file.close();
+    row += '\n';
+
+    // Append to .txt
+    ofstream outTxt(file_name, ios::app);
+    if (!outTxt)
+    {
+         cerr << "Error opening file for append: " << file_name << endl;
+         return;
+    }
+    outTxt << row;
+    outTxt.close();
+
+    // Append to .csv counterpart
+    string csvName = file_name;
+    if (csvName.size() > 4 && csvName.substr(csvName.size()-4) == ".txt")
+         csvName = csvName.substr(0, csvName.size()-4) + ".csv";
+    else
+         csvName = csvName + ".csv";
+
+    ofstream outCsv(csvName, ios::app);
+    if (outCsv)
+    {
+         outCsv << row;
+         outCsv.close();
+    }
+
+    cout << "New row added successfully. " << endl;
 }
 
 //count row
